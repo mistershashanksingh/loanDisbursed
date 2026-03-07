@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { TrendingDown, IndianRupee, Calendar, Percent } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import AnalogEMIMeter from './AnalogEMIMeter';
+// 1. Updated Import Name!
+import CreditScorePieChart from './CreditScorePieChart';
 
 export default function EMICalculator() {
   const { ref, isVisible } = useScrollReveal({ threshold: 0.2 });
@@ -24,8 +25,6 @@ export default function EMICalculator() {
 
   const formatINR = (val: number) =>
     '₹' + val.toLocaleString('en-IN', { maximumFractionDigits: 0 });
-
-  const principalPct = (amount / totalPayment) * 100;
 
   return (
     <section className="py-24 px-6" ref={ref}>
@@ -97,9 +96,10 @@ export default function EMICalculator() {
                 </div>
               </div>
 
-              <AnalogEMIMeter
-                principalAmount={amount}
-                interestAmount={totalInterest}
+              {/* 2. Updated Component Name and Prop Names! */}
+              <CreditScorePieChart
+                principal={amount}
+                interest={totalInterest}
                 animate={true}
               />
 
