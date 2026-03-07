@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, User, Mail, Phone, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import CreditScoreMeter from './CreditScoreMeter';
+import CreditScorePieChart from './CreditScorePieChart';
 
 interface CreditScoreCheckFormProps {
   onClose: () => void;
@@ -95,7 +95,7 @@ export default function CreditScoreCheckForm({ onClose, onScoreGenerated }: Cred
           </div>
 
           <div className="mb-6">
-            <CreditScoreMeter score={generatedScore} animate={true} />
+            <CreditScorePieChart score={generatedScore} animate={true} />
           </div>
 
           <div className="space-y-2 mb-6">

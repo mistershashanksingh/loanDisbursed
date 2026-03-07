@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Shield, TrendingUp, Award, Zap } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import CreditScoreMeter from './CreditScoreMeter';
+import CreditScorePieChart from './CreditScorePieChart';
 import CreditScoreCheckForm from './CreditScoreCheckForm';
 
 const benefits = [
@@ -36,7 +36,7 @@ export default function CreditScoreSection() {
               <div className="flex flex-col items-center justify-center min-h-[500px]">
                 {checkedScore ? (
                   <div className="w-full">
-                    <CreditScoreMeter score={checkedScore} animate={false} />
+                    <CreditScorePieChart score={checkedScore} animate={false} />
                     <div className="mt-8 text-center">
                       <button
                         onClick={() => { setCheckedScore(null); setShowForm(false); }}

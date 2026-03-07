@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {Menu, X, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
-import myIcon from '../assets/icond.png'
 
 interface NavigationProps {
   activeSection: string;
@@ -27,7 +26,14 @@ export default function Navigation({ activeSection, onNavigate }: NavigationProp
       <nav className="nav-glass fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-              <img src={myIcon} alt="Icon description" className="w-13 h-13 rounded-xl object-contain overflow-hidden" />
+            <img 
+              src="/src/assets/icond.png" 
+              alt="DocketDisbursed Logo" 
+              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl object-contain"
+            />
+            <span className="text-white font-black text-lg sm:text-xl tracking-tight ml-2">
+              D<span className="glass-blue">ocket</span>D<span className="glass-blue">isbursed</span>
+            </span>
           </div>
 
           <div className="hidden md:flex items-center gap-1">
