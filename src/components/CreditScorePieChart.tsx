@@ -1,170 +1,356 @@
 import { useEffect, useState } from 'react';
 
-interface EMIDonutChartProps {
-  principal: number;
-  interest: number;
-  processingFee?: number;
+
+
+interface CreditScorePieChartProps {
+
+  score: number;
+
   animate?: boolean;
+
 }
 
-export default function EMIDonutChart({ 
-  principal, 
-  interest, 
-  processingFee = 0, 
-  animate = true 
-}: EMIDonutChartProps) {
-  const total = principal + interest + processingFee;
-  
-  // States for animation
-  const [displayTotal, setDisplayTotal] = useState(animate ? 0 : total);
-  const [progress, setProgress] = useState(animate ? 0 : 1);
+
+
+export default function CreditScorePieChart({ score, animate = true }: CreditScorePieChartProps) {
+
+  const [displayScore, setDisplayScore] = useState(animate ? 300 : score);
+
+
 
   useEffect(() => {
-    if (!animate || total === 0) {
-      setDisplayTotal(total);
-      setProgress(1);
-      return;
-    }
 
-    const duration = 2000; // 2 seconds animation
-    const frames = 60;
-    const stepTime = duration / frames;
-    let currentFrame = 0;
+    if (!animate) return;
+
+
+
+    const duration = 2000;
+
+    const steps = 60;
+
+    const increment = (score - 300) / steps;
+
+    let current = 0;
+
+
 
     const timer = setInterval(() => {
-      currentFrame++;
-      const p = currentFrame / frames;
-      
-      // Cubic ease-out animation for smoother deceleration
-      const easeOutProgress = 1 - Math.pow(1 - p, 3);
 
-      if (currentFrame >= frames) {
-        setDisplayTotal(total);
-        setProgress(1);
+      current++;
+
+      if (current >= steps) {
+
+        setDisplayScore(score);
+
         clearInterval(timer);
+
       } else {
-        setDisplayTotal(Math.floor(total * easeOutProgress));
-        setProgress(easeOutProgress);
+
+        setDisplayScore(Math.floor(300 + increment * current));
+
       }
-    }, stepTime);
+
+    }, duration / steps);
+
+
 
     return () => clearInterval(timer);
-  }, [total, animate]);
 
-  // SVG circle calculations
-  const radius = 70; // Adjusted for thicker stroke
-  const circumference = 2 * Math.PI * radius;
-  const strokeWidth = 32;
+  }, [score, animate]);
 
-  // Calculate segment lengths based on current animation progress
-  const principalLen = total > 0 ? (principal / total) * circumference * progress : 0;
-  const interestLen = total > 0 ? (interest / total) * circumference * progress : 0;
-  const feeLen = total > 0 ? (processingFee / total) * circumference * progress : 0;
 
-  // Calculate offsets to stack them consecutively
-  const principalOffset = 0;
-  const interestOffset = -principalLen;
-  const feeOffset = -(principalLen + interestLen);
 
-  // Colors based on your image
-  const colors = {
-    principal: '#0066FF', // Blue
-    interest: '#FFCC00',  // Yellow
-    fee: '#FF007F'        // Pink
+  const getScoreColor = (s: number) => {
+
+    if (s >= 750) return '#00FF87';
+
+    if (s >= 700) return '#7a97fd';
+
+    if (s >= 650) return '#FFB800';
+
+    return '#FF6B6B';
+
   };
 
+
+
+  const getScoreLabel = (s: number) => {
+
+    if (s >= 750) return 'Excellent';
+
+    if (s >= 700) return 'Good';
+
+    if (s >= 650) return 'Fair';
+
+    return 'Poor';
+
+  };
+
+
+
+  const scoreColor = getScoreColor(displayScore);
+
+  const scoreLabel = getScoreLabel(displayScore);
+
+
+
+  // Calculate pie chart segments
+
+  const normalizedScore = Math.max(0, Math.min(100, ((displayScore - 300) / 600) * 100));
+
+  const scorePercentage = normalizedScore;
+
+  const remainingPercentage = 100 - scorePercentage;
+
+
+
+  // SVG circle calculations
+
+  const radius = 80;
+
+  const circumference = 2 * Math.PI * radius;
+
+  const scoreStrokeDasharray = `${(scorePercentage / 100) * circumference} ${circumference}`;
+
+  const remainingStrokeDasharray = `${(remainingPercentage / 100) * circumference} ${circumference}`;
+
+
+
   return (
+
     <div className="relative w-full max-w-sm mx-auto">
-      <div className="relative flex items-center justify-center">
-        <svg viewBox="0 0 200 200" className="w-full transform -rotate-90 drop-shadow-lg">
-          {/* Background Track (Optional, keeps the shape visible before animation) */}
+
+      <div className="relative">
+
+        <svg viewBox="0 0 200 200" className="w-full transform -rotate-90">
+
+          <defs>
+
+            <filter id="pieGlow">
+
+              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+
+              <feMerge>
+
+                <feMergeNode in="coloredBlur" />
+
+                <feMergeNode in="SourceGraphic" />
+
+              </feMerge>
+
+            </filter>
+
+            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <stop offset="0%" style={{ stopColor: scoreColor, stopOpacity: 1 }} />
+
+              <stop offset="100%" style={{ stopColor: scoreColor, stopOpacity: 0.7 }} />
+
+            </linearGradient>
+
+          </defs>
+
+
+
+          {/* Background circle */}
+
           <circle
-            cx="100" cy="100" r={radius}
+
+            cx="100"
+
+            cy="100"
+
+            r={radius}
+
             fill="none"
-            stroke="rgba(255,255,255,0.05)"
-            strokeWidth={strokeWidth}
+
+            stroke="rgba(255,255,255,0.08)"
+
+            strokeWidth="16"
+
           />
 
-          {/* Segment 1: Principal (Blue) */}
-          {principalLen > 0 && (
-            <circle
-              cx="100" cy="100" r={radius}
-              fill="none"
-              stroke={colors.principal}
-              strokeWidth={strokeWidth}
-              strokeDasharray={`${principalLen} ${circumference}`}
-              strokeDashoffset={principalOffset}
-              strokeLinecap="butt"
-            />
-          )}
 
-          {/* Segment 2: Interest (Yellow) */}
-          {interestLen > 0 && (
-            <circle
-              cx="100" cy="100" r={radius}
-              fill="none"
-              stroke={colors.interest}
-              strokeWidth={strokeWidth}
-              strokeDasharray={`${interestLen} ${circumference}`}
-              strokeDashoffset={interestOffset}
-              strokeLinecap="butt"
-            />
-          )}
 
-          {/* Segment 3: Processing Fee (Pink) */}
-          {feeLen > 0 && (
-            <circle
-              cx="100" cy="100" r={radius}
-              fill="none"
-              stroke={colors.fee}
-              strokeWidth={strokeWidth}
-              strokeDasharray={`${feeLen} ${circumference}`}
-              strokeDashoffset={feeOffset}
-              strokeLinecap="butt"
-            />
-          )}
+          {/* Remaining percentage (background) */}
+
+          <circle
+
+            cx="100"
+
+            cy="100"
+
+            r={radius}
+
+            fill="none"
+
+            stroke="rgba(255,255,255,0.15)"
+
+            strokeWidth="16"
+
+            strokeDasharray={remainingStrokeDasharray}
+
+            strokeDashoffset="0"
+
+            strokeLinecap="round"
+
+          />
+
+
+
+          {/* Score percentage (foreground) */}
+
+          <circle
+
+            cx="100"
+
+            cy="100"
+
+            r={radius}
+
+            fill="none"
+
+            stroke="url(#scoreGradient)"
+
+            strokeWidth="16"
+
+            strokeDasharray={scoreStrokeDasharray}
+
+            strokeDashoffset="0"
+
+            strokeLinecap="round"
+
+            filter="url(#pieGlow)"
+
+            style={{
+
+              transition: animate ? 'stroke-dasharray 2s ease-out' : 'none',
+
+            }}
+
+          />
+
+
+
+          {/* Center dot */}
+
+          <circle cx="100" cy="100" r="4" fill={scoreColor} filter="url(#pieGlow)" />
+
         </svg>
 
-        {/* Center Text Box */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="glass-card py-3 px-5 text-center flex flex-col items-center justify-center" 
-               style={{ 
-                 background: 'rgba(255,255,255,0.05)', 
-                 backdropFilter: 'blur(10px)',
-                 boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                 borderRadius: '12px',
-                 border: '1px solid rgba(255,255,255,0.1)'
-               }}>
-            <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              In Total
-            </p>
-            <p className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>
-              ₹{displayTotal.toLocaleString('en-IN')}
-            </p>
-          </div>
+
+
+        {/* Score display in center */}
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+
+          <p
+
+            className="text-4xl lg:text-5xl font-black transition-all duration-500"
+
+            style={{ color: scoreColor, textShadow: `0 0 20px ${scoreColor}40` }}
+
+          >
+
+            {displayScore}
+
+          </p>
+
+          <p className="text-sm font-semibold mt-1" style={{ color: scoreColor }}>
+
+            {scoreLabel}
+
+          </p>
+
+          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+
+            CIBIL Score
+
+          </p>
+
         </div>
+
+
+
+        {/* Percentage indicator */}
+
+        <div className="absolute top-4 right-4">
+
+          <div 
+
+            className="px-3 py-1 rounded-full text-xs font-bold"
+
+            style={{ 
+
+              background: `${scoreColor}20`, 
+
+              color: scoreColor,
+
+              border: `1px solid ${scoreColor}40`
+
+            }}
+
+          >
+
+            {Math.round(scorePercentage)}%
+
+          </div>
+
+        </div>
+
       </div>
 
-      {/* Legend */}
-      <div className="flex justify-center gap-6 mt-6 px-4">
+
+
+      {/* Score range indicators */}
+
+      <div className="flex justify-between px-4 mt-4">
+
         <div className="text-center">
-          <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: colors.principal }} />
-          <p className="text-xs font-bold text-white">₹{principal.toLocaleString('en-IN')}</p>
-          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Principal</p>
+
+          <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ background: '#FF6B6B' }} />
+
+          <p className="text-xs font-bold" style={{ color: '#FF6B6B' }}>300</p>
+
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Poor</p>
+
         </div>
+
         <div className="text-center">
-          <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: colors.interest }} />
-          <p className="text-xs font-bold text-white">₹{interest.toLocaleString('en-IN')}</p>
-          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Interest</p>
+
+          <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ background: '#FFB800' }} />
+
+          <p className="text-xs font-bold" style={{ color: '#FFB800' }}>650</p>
+
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Fair</p>
+
         </div>
-        {processingFee > 0 && (
-          <div className="text-center">
-            <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: colors.fee }} />
-            <p className="text-xs font-bold text-white">₹{processingFee.toLocaleString('en-IN')}</p>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Fee</p>
-          </div>
-        )}
+
+        <div className="text-center">
+
+          <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ background: '#7a97fd' }} />
+
+          <p className="text-xs font-bold" style={{ color: '#7a97fd' }}>700</p>
+
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Good</p>
+
+        </div>
+
+        <div className="text-center">
+
+          <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ background: '#00FF87' }} />
+
+          <p className="text-xs font-bold" style={{ color: '#00FF87' }}>900</p>
+
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Excellent</p>
+
+        </div>
+
       </div>
+
     </div>
+
   );
+
 }
+
