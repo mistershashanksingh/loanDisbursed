@@ -13,20 +13,18 @@ export default function CreditScorePieChart({
   processingFee = 0, 
   animate = true 
 }: EMIDonutChartProps) {
-  // 1. Crash-proof the numbers (defaults to 0 if undefined)
-  const safePrincipal = principal || 0;
-  const safeInterest = interest || 0;
-  const safeFee = processingFee || 0;
+  // 1. Crash-proof and round numbers to prevent long decimals breaking the UI
+  const safePrincipal = Math.round(principal || 0);
+  const safeInterest = Math.round(interest || 0);
+  const safeFee = Math.round(processingFee || 0);
   const total = safePrincipal + safeInterest + safeFee;
   
-  // States for animation
+  // We only need one animated state for the total amount to make it sequential
   const [displayTotal, setDisplayTotal] = useState(animate ? 0 : total);
-  const [progress, setProgress] = useState(animate ? 0 : 1);
 
   useEffect(() => {
     if (!animate || total === 0) {
       setDisplayTotal(total);
-      setProgress(1);
       return;
     }
 
@@ -44,31 +42,34 @@ export default function CreditScorePieChart({
 
       if (currentFrame >= frames) {
         setDisplayTotal(total);
-        setProgress(1);
         clearInterval(timer);
       } else {
-        setDisplayTotal(Math.floor(total * easeOutProgress));
-        setProgress(easeOutProgress);
+        setDisplayTotal(total * easeOutProgress);
       }
     }, stepTime);
 
     return () => clearInterval(timer);
   }, [total, animate]);
 
-  // SVG circle calculations
-  const radius = 70; 
+  // SEQUENTIAL CALCULATION: Figure out how much of each segment to draw based on current displayTotal
+  const currentPrincipal = Math.min(displayTotal, safePrincipal);
+  const currentInterest = Math.max(0, Math.min(displayTotal - safePrincipal, safeInterest));
+  const currentFee = Math.max(0, displayTotal - safePrincipal - safeInterest);
+
+  // SVG circle calculations (adjusted radius and stroke to give text more room)
+  const radius = 75; 
   const circumference = 2 * Math.PI * radius;
-  const strokeWidth = 32;
+  const strokeWidth = 26;
 
-  // Segment lengths
-  const principalLen = total > 0 ? (safePrincipal / total) * circumference * progress : 0;
-  const interestLen = total > 0 ? (safeInterest / total) * circumference * progress : 0;
-  const feeLen = total > 0 ? (safeFee / total) * circumference * progress : 0;
+  // Segment lengths based on the current animated step
+  const principalLen = total > 0 ? (currentPrincipal / total) * circumference : 0;
+  const interestLen = total > 0 ? (currentInterest / total) * circumference : 0;
+  const feeLen = total > 0 ? (currentFee / total) * circumference : 0;
 
-  // Segment offsets
+  // FIXED OFFSETS: This keeps the start points anchored so they fill exactly from where the previous one ends
   const principalOffset = 0;
-  const interestOffset = -principalLen;
-  const feeOffset = -(principalLen + interestLen);
+  const interestOffset = total > 0 ? -((safePrincipal / total) * circumference) : 0;
+  const feeOffset = total > 0 ? -(((safePrincipal + safeInterest) / total) * circumference) : 0;
 
   const colors = {
     principal: '#0066FF', // Blue
@@ -80,12 +81,15 @@ export default function CreditScorePieChart({
     <div className="relative w-full max-w-sm mx-auto">
       <div className="relative flex items-center justify-center">
         <svg viewBox="0 0 200 200" className="w-full transform -rotate-90 drop-shadow-lg">
+          {/* Background Track */}
           <circle
             cx="100" cy="100" r={radius}
             fill="none"
             stroke="rgba(255,255,255,0.05)"
             strokeWidth={strokeWidth}
           />
+          
+          {/* Segment 1: Principal (Blue) */}
           {principalLen > 0 && (
             <circle
               cx="100" cy="100" r={radius}
@@ -97,6 +101,8 @@ export default function CreditScorePieChart({
               strokeLinecap="butt"
             />
           )}
+
+          {/* Segment 2: Interest (Yellow) */}
           {interestLen > 0 && (
             <circle
               cx="100" cy="100" r={radius}
@@ -108,6 +114,8 @@ export default function CreditScorePieChart({
               strokeLinecap="butt"
             />
           )}
+
+          {/* Segment 3: Processing Fee (Pink) */}
           {feeLen > 0 && (
             <circle
               cx="100" cy="100" r={radius}
@@ -121,43 +129,60 @@ export default function CreditScorePieChart({
           )}
         </svg>
 
+        {/* Center Text Box */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="glass-card py-3 px-5 text-center flex flex-col items-center justify-center" 
+          <div className="glass-card py-3 px-4 text-center flex flex-col items-center justify-center" 
                style={{ 
                  background: 'rgba(255,255,255,0.05)', 
                  backdropFilter: 'blur(10px)',
                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
                  borderRadius: '12px',
-                 border: '1px solid rgba(255,255,255,0.1)'
+                 border: '1px solid rgba(255,255,255,0.1)',
+                 maxWidth: '85%' // Prevents horizontal overflow
                }}>
-            <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <p className="text-[10px] font-semibold tracking-widest uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
               In Total
             </p>
-            <p className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>
-              ₹{(displayTotal || 0).toLocaleString('en-IN')}
+            {/* Added whitespace-nowrap and slightly adjusted text sizes to keep it from breaking lines */}
+            <p className="text-xl sm:text-2xl font-black text-white whitespace-nowrap" style={{ letterSpacing: '-0.02em' }}>
+              ₹{Math.round(displayTotal || 0).toLocaleString('en-IN')}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-center gap-6 mt-6 px-4">
-        <div className="text-center">
-          <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: colors.principal }} />
-          <p className="text-xs font-bold text-white">₹{(safePrincipal || 0).toLocaleString('en-IN')}</p>
-          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Principal</p>
+      {/* NEW STACKED LEGEND WITH CAPSULES */}
+      <div className="flex flex-col gap-3 mt-8 w-full max-w-[250px] mx-auto">
+        
+        {/* Principal Legend Row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-2 rounded-full" style={{ background: colors.principal }} />
+            <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Principal</span>
+          </div>
+          <span className="text-sm font-bold text-white">₹{safePrincipal.toLocaleString('en-IN')}</span>
         </div>
-        <div className="text-center">
-          <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: colors.interest }} />
-          <p className="text-xs font-bold text-white">₹{(safeInterest || 0).toLocaleString('en-IN')}</p>
-          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Interest</p>
+
+        {/* Interest Legend Row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-2 rounded-full" style={{ background: colors.interest }} />
+            <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Interest</span>
+          </div>
+          <span className="text-sm font-bold text-white">₹{safeInterest.toLocaleString('en-IN')}</span>
         </div>
+
+        {/* Fee Legend Row (Hidden if 0) */}
         {safeFee > 0 && (
-          <div className="text-center">
-            <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: colors.fee }} />
-            <p className="text-xs font-bold text-white">₹{(safeFee || 0).toLocaleString('en-IN')}</p>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Fee</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-2 rounded-full" style={{ background: colors.fee }} />
+              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Fee</span>
+            </div>
+            <span className="text-sm font-bold text-white">₹{safeFee.toLocaleString('en-IN')}</span>
           </div>
         )}
+
       </div>
     </div>
   );
