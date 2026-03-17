@@ -14,15 +14,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER, // Your Gmail address
-        pass: process.env.EMAIL_PASS, // Your 16-character Google App Password
+        user: process.env.SMTP_USER, // Your email address
+        pass: process.env.SMTP_PASS, // Your email password or app password
       },
     });
 
     // Format the email
     const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER, // Sends the email to yourself
+      from: process.env.SMTP_USER,
+      to: process.env.NOTIFICATION_EMAIL || process.env.SMTP_USER, // Where to receive applications
       subject: `New Loan App: ${body.fullName} - ₹${body.loanAmount}`,
       html: `
         <h2 style="color: #0077ff;">New Loan Application</h2>

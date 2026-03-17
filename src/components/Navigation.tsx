@@ -32,7 +32,7 @@ export default function Navigation({ activeSection, onNavigate }: NavigationProp
               className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl object-contain"
             />
             <span className="text-white font-black text-lg sm:text-xl tracking-tight ml-2">
-              D<span className="glass-blue">ocket</span>D<span className="glass-blue">isbursed</span>
+              L<span className="glass-blue">oan</span>D<span className="glass-blue">isbursed</span>
             </span>
           </div>
 

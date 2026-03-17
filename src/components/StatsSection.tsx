@@ -56,7 +56,7 @@ export default function StatsSection() {
             }`}
           >
             <p className="text-xs font-semibold tracking-widest camelcase mb-3" style={{ color: '#87a1fd' }}>
-              Why Docket Disbursed
+              Why Loan Disbursed
             </p>
             <h2 className="text-4xl lg:text-5xl font-black text-white mb-4" style={{ letterSpacing: '-0.02em' }}>
               Built for the Discerning

@@ -46,27 +46,33 @@ export default function CreditScoreCheckForm({ onClose, onScoreGenerated }: Cred
 
     setLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-
-    const simulatedScore = Math.floor(Math.random() * (850 - 650 + 1)) + 650;
-    setGeneratedScore(simulatedScore);
-
-    const { error: insertError } = await supabase
-      .from('credit_score_checks')
-      .insert({
-        full_name: fullName,
-        email: email,
-        phone_number: phone,
-        pan_card: panCard,
-        credit_score: simulatedScore,
+    try {
+      // Call real credit score API
+      const response = await fetch('/api/credit-score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName,
+          email,
+          phone,
+          panCard,
+        }),
       });
 
-    if (insertError) {
-      setError('Failed to save your credit score check. Please try again.');
-      setGeneratedScore(null);
-    } else {
-      setSuccess(true);
-      onScoreGenerated?.(simulatedScore);
+      const data = await response.json();
+
+      if (data.success) {
+        setGeneratedScore(data.creditScore);
+        setSuccess(true);
+        onScoreGenerated?.(data.creditScore);
+      } else {
+        setError(data.message || 'Failed to fetch credit score. Please try again.');
+      }
+    } catch (error) {
+      console.error('Credit score check error:', error);
+      setError('Network error. Please check your connection and try again.');
     }
 
     setLoading(false);

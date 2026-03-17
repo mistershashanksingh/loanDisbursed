@@ -15,7 +15,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-white font-black text-xl tracking-tight">
-                D<span className="glass-blue">ocket </span>D<span className="glass-blue">isbursed</span>
+                L<span className="glass-blue">oan</span>D<span className="glass-blue">isbursed</span>
               </span>
             </div>
             <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -24,9 +24,9 @@ export default function Footer() {
             
             <div className="flex gap-3">
               {[
-                { Icon: Twitter, url: "https://twitter.com/docketdisbursed", color: "#1DA1F2" },
-                { Icon: Linkedin, url: "https://linkedin.com/in/docketdisbursed", color: "#0077B5" },
-                { Icon: Instagram, url: "https://instagram.com/docketdisbursed", color: '#E4405F' },
+                { Icon: Twitter, url: "https://twitter.com/loandisbursed", color: "#1DA1F2" },
+                { Icon: Linkedin, url: "https://linkedin.com/in/loandisbursed", color: "#0077B5" },
+                { Icon: Instagram, url: "https://instagram.com/loandisbursed", color: '#E4405F' },
               ].map(({ Icon, url, color }, i) => ( // Destructured 'color' here
                 <a
                   key={i}
@@ -109,7 +109,7 @@ export default function Footer() {
             </div>
             <div>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Email Support</p>
-              <p className="text-sm font-semibold text-white">docketdisbursed@gmail.com</p>
+              <p className="text-sm font-semibold text-white">loandisbursed@gmail.com</p>
             </div>
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function Footer() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
         >
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
-            © 2026 DocketDisbursed Financial Services Pvt. Ltd. | CIN: U74999MH2025PTC123456 | RBI Reg. No.: N-14.12345
+            © 2026 LoanDisbursed Financial Services Pvt. Ltd. | CIN: U74999MH2025PTC123456 | RBI Reg. No.: N-14.12345
           </p>
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
             Lending responsibly since 2025
